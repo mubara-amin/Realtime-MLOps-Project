@@ -1,6 +1,4 @@
-/data/*
-!/data/*.dvc
-!/data/.gitkeep
+/data/churn_data.csv
 
 models/*.pkl
 *.pyc
