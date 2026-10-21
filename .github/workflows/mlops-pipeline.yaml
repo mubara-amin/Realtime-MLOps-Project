@@ -44,16 +44,20 @@ jobs:
         aws-region: ${{ env.AWS_REGION }}
     
     - name: Push model to S3 directly
+      id: upload_model
+      continue-on-error: true
       run: |
-        aws s3 cp models/churn_model.pkl s3://churn-model-bucket-cicd-mubara/models/churn_model.pkl
-        echo "Model pushed to S3 is success"
+        aws s3 cp models/churn_model.pkl s3://${{ env.S3_BUCKET }}/models/churn_model.pkl
+        echo "Model pushed to S3 successfully"
     
     - name: Update inference.yaml with S3 model path
+      if: steps.upload_model.outcome == 'success'
       run: |
-        MODEL_URI="s3://churn-model-bucket-cicd-mubara/models/churn_model.pkl"
+        MODEL_URI="s3://${{ env.S3_BUCKET }}/models/churn_model.pkl"
         sed -i "s|storageUri: .*|storageUri: $MODEL_URI|g" k8s/inference.yaml
     
     - name: Commit updated inference.yaml
+      if: steps.upload_model.outcome == 'success'
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
